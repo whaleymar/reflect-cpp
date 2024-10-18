@@ -501,54 +501,43 @@ constexpr auto* get_if(const Variant<Types...>* _v) noexcept {
 template <class T, class... Types>
 constexpr T& get(Variant<Types...>& _v) {
   auto ptr = get_if<T>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
   return *ptr;
 }
 
 template <class T, class... Types>
 constexpr T&& get(Variant<Types...>&& _v) {
   auto ptr = get_if<T>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
+
   return std::move(*ptr);
 }
 
 template <class T, class... Types>
 constexpr const T& get(const Variant<Types...>& _v) {
   auto ptr = get_if<T>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
   return *ptr;
 }
 
 template <int _i, class... Types>
 constexpr auto& get(Variant<Types...>& _v) {
   auto ptr = get_if<_i>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
   return *ptr;
 }
 
 template <int _i, class... Types>
 constexpr auto&& get(Variant<Types...>&& _v) {
   auto ptr = get_if<_i>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
   return std::move(*ptr);
 }
 
 template <int _i, class... Types>
 constexpr const auto& get(const Variant<Types...>& _v) {
   auto ptr = get_if<_i>(&_v);
-  if (!ptr) {
-    throw std::runtime_error("Variant does not contain signified type.");
-  }
+  assert(ptr);
   return *ptr;
 }
 

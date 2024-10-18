@@ -22,15 +22,14 @@ struct Reader {
   using InputVarType = msgpack_object;
 
   template <class T>
-  static constexpr bool has_custom_constructor = (requires(InputVarType var) {
-    T::from_msgpack_obj(var);
-  });
+  static constexpr bool has_custom_constructor =
+      (requires(InputVarType var) { T::from_msgpack_obj(var); });
 
   rfl::Result<InputVarType> get_field_from_array(
       const size_t _idx, const InputArrayType _arr) const noexcept;
 
   rfl::Result<InputVarType> get_field_from_object(
-      const std::string& _name, const InputObjectType& _obj) const noexcept ;
+      const std::string& _name, const InputObjectType& _obj) const noexcept;
 
   bool is_empty(const InputVarType& _var) const noexcept;
 
@@ -74,8 +73,7 @@ struct Reader {
     }
   }
 
-  rfl::Result<InputArrayType> to_array(
-      const InputVarType& _var) const noexcept;
+  rfl::Result<InputArrayType> to_array(const InputVarType& _var) const noexcept;
 
   rfl::Result<InputObjectType> to_object(
       const InputVarType& _var) const noexcept;
@@ -111,11 +109,7 @@ struct Reader {
   template <class T>
   rfl::Result<T> use_custom_constructor(
       const InputVarType& _var) const noexcept {
-    try {
-      return T::from_msgpack_obj(_var);
-    } catch (std::exception& e) {
-      return rfl::Error(e.what());
-    }
+    return T::from_msgpack_obj(_var);
   }
 };
 

@@ -67,19 +67,10 @@ struct Reader {
       return std::visit(get_value, _var.node_or_attribute_) == "true";
     } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>()) {
       const auto str = std::visit(get_value, _var.node_or_attribute_);
-      try {
-        return static_cast<T>(std::stod(str));
-      } catch (std::exception& e) {
-        return Error("Could not cast '" + std::string(str) +
-                     "' to floating point value.");
-      }
+      return static_cast<T>(std::stod(str));
     } else if constexpr (std::is_integral<std::remove_cvref_t<T>>()) {
       const auto str = std::visit(get_value, _var.node_or_attribute_);
-      try {
-        return static_cast<T>(std::stoi(str));
-      } catch (std::exception& e) {
-        return Error("Could not cast '" + std::string(str) + "' to integer.");
-      }
+      return static_cast<T>(std::stoi(str));
     } else {
       static_assert(rfl::always_false_v<T>, "Unsupported type.");
     }

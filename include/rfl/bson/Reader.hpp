@@ -45,9 +45,8 @@ struct Reader {
   using InputVarType = BSONInputVar;
 
   template <class T>
-  static constexpr bool has_custom_constructor = (requires(InputVarType var) {
-    T::from_bson_obj(var);
-  });
+  static constexpr bool has_custom_constructor =
+      (requires(InputVarType var) { T::from_bson_obj(var); });
 
   rfl::Result<InputVarType> get_field_from_array(
       const size_t _idx, const InputArrayType& _arr) const noexcept;
@@ -121,8 +120,7 @@ struct Reader {
     }
   }
 
-  rfl::Result<InputArrayType> to_array(
-      const InputVarType& _var) const noexcept;
+  rfl::Result<InputArrayType> to_array(const InputVarType& _var) const noexcept;
 
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
@@ -174,15 +172,12 @@ struct Reader {
   template <class T>
   rfl::Result<T> use_custom_constructor(
       const InputVarType& _var) const noexcept {
-    try {
-      return T::from_bson_obj(_var);
-    } catch (std::exception& e) {
-      return rfl::Error(e.what());
-    }
+    return T::from_bson_obj(_var);
   }
+}
 
- private:
-  InputVarType to_input_var(bson_iter_t* _iter) const noexcept;
+private : InputVarType
+          to_input_var(bson_iter_t* _iter) const noexcept;
 };
 
 }  // namespace bson

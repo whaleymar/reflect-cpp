@@ -29,12 +29,8 @@ auto read(const InputVarType& _var) {
 /// Parses an object from YAML using reflection.
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const std::string& _yaml_str) {
-  try {
-    const auto var = InputVarType(YAML::Load(_yaml_str));
-    return read<T, Ps...>(var);
-  } catch (std::exception& e) {
-    return Error(e.what());
-  }
+  const auto var = InputVarType(YAML::Load(_yaml_str));
+  return read<T, Ps...>(var);
 }
 
 /// Parses an object from a stringstream.

@@ -15,10 +15,10 @@ struct FiveDigitCode {
 
   FiveDigitCode(const int _code) : code(_code) {
     if (_code < 10000) {
-      throw std::runtime_error("Less than five digits.");
+      // throw std::runtime_error("Less than five digits.");
     }
     if (_code > 99999) {
-      throw std::runtime_error("More than five digits.");
+      // throw std::runtime_error("More than five digits.");
     }
   }
 

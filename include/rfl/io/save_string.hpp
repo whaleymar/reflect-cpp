@@ -13,14 +13,10 @@ namespace io {
 template <class T, class WriteFunction>
 Result<Nothing> save_string(const std::string& _fname, const T& _obj,
                             const WriteFunction& _write) {
-  try {
-    std::ofstream outfile;
-    outfile.open(_fname);
-    _write(_obj, outfile);
-    outfile.close();
-  } catch (std::exception& e) {
-    return Error(e.what());
-  }
+  std::ofstream outfile;
+  outfile.open(_fname);
+  _write(_obj, outfile);
+  outfile.close();
   return Nothing{};
 }
 

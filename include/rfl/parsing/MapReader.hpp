@@ -40,30 +40,21 @@ class MapReader {
  private:
   template <class T>
   Result<T> key_to_numeric(auto& _pair) const noexcept {
-    try {
-      if constexpr (std::is_integral_v<T> && std::is_signed_v<T>) {
-        return static_cast<T>(std::stoll(_pair.first));
-      } else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>) {
-        return static_cast<T>(std::stoull(_pair.first));
-      } else if constexpr (std::is_floating_point_v<T>) {
-        return static_cast<T>(std::stod(_pair.first));
-      } else {
-        static_assert(always_false_v<T>, "Unsupported type");
-      }
-    } catch (std::exception& e) {
-      return Error(e.what());
+    if constexpr (std::is_integral_v<T> && std::is_signed_v<T>) {
+      return static_cast<T>(std::stoll(_pair.first));
+    } else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>) {
+      return static_cast<T>(std::stoull(_pair.first));
+    } else if constexpr (std::is_floating_point_v<T>) {
+      return static_cast<T>(std::stod(_pair.first));
+    } else {
+      static_assert(always_false_v<T>, "Unsupported type");
     }
   }
 
   Result<std::pair<KeyType, ValueType>> make_key(auto& _pair) const noexcept {
     const auto to_pair =
         [&](auto _key) -> Result<std::pair<KeyType, ValueType>> {
-      try {
-        return std::make_pair(KeyType(std::move(_key)),
-                              std::move(_pair.second));
-      } catch (std::exception& e) {
-        return Error(e.what());
-      }
+      return std::make_pair(KeyType(std::move(_key)), std::move(_pair.second));
     };
 
     if constexpr (std::is_integral_v<KeyType> ||

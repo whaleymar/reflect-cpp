@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
@@ -19,7 +20,7 @@ class Error {
  public:
   Error(const std::string& _what) : what_(_what) {}
 
-  ~Error() = default;
+  // ~Error() = default;
 
   /// Returns the error message, equivalent to .what() in std::exception.
   const std::string& what() const { return what_; }
@@ -257,24 +258,16 @@ class Result {
     }
   }
 
-  /// Returns the value if the result does not contain an error, throws an
-  /// exceptions if not. Similar to .unwrap() in Rust.
+  /// Returns the value of the result
   T& value() {
-    if (success_) {
-      return get_t();
-    } else {
-      throw std::runtime_error(get_err().what());
-    }
+    assert(success_);
+    return get_t();
   }
 
-  /// Returns the value if the result does not contain an error, throws an
-  /// exceptions if not. Similar to .unwrap() in Rust.
+  /// Returns the value of the result
   const T& value() const {
-    if (success_) {
-      return get_t();
-    } else {
-      throw std::runtime_error(get_err().what());
-    }
+    assert(success_);
+    return get_t();
   }
 
   /// Returns the value or a default.

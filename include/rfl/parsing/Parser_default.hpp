@@ -33,7 +33,7 @@ namespace parsing {
 
 /// Default case - anything that cannot be explicitly matched.
 template <class R, class W, class T, class ProcessorsType>
-requires AreReaderAndWriter<R, W, T>
+  requires AreReaderAndWriter<R, W, T>
 struct Parser {
  public:
   using InputVarType = typename R::InputVarType;
@@ -44,11 +44,7 @@ struct Parser {
   static Result<T> read(const R& _r, const InputVarType& _var) noexcept {
     if constexpr (internal::has_read_reflector<T>) {
       const auto wrap_in_t = [](auto _named_tuple) -> Result<T> {
-        try {
-          return Reflector<T>::to(_named_tuple);
-        } catch (std::exception& e) {
-          return Error(e.what());
-        }
+        return Reflector<T>::to(_named_tuple);
       };
       return Parser<R, W, typename Reflector<T>::ReflType,
                     ProcessorsType>::read(_r, _var)
@@ -59,11 +55,7 @@ struct Parser {
       if constexpr (internal::has_reflection_type_v<T>) {
         using ReflectionType = std::remove_cvref_t<typename T::ReflectionType>;
         const auto wrap_in_t = [](auto _named_tuple) -> Result<T> {
-          try {
-            return T{_named_tuple};
-          } catch (std::exception& e) {
-            return Error(e.what());
-          }
+          return T{_named_tuple};
         };
         return Parser<R, W, ReflectionType, ProcessorsType>::read(_r, _var)
             .and_then(wrap_in_t);

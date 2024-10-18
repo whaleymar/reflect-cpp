@@ -180,21 +180,17 @@ class Object {
     i_ = 0;
   }
 
-  /// Returns the element signified by the key or throws an exception.
+  /// Returns the element signified by the key
   T& at(const std::string& _key) {
     const auto i = find(_key);
-    if (i == size()) {
-      throw std::runtime_error("Key named '" + _key + "' not found.");
-    }
+    assert(i != size());
     return data_[i].second;
   }
 
-  /// Returns the element signified by the key or throws an exception.
+  /// Returns the element signified by the key
   const T& at(const std::string& _key) const {
     const auto i = find(_key);
-    if (i == size()) {
-      throw std::runtime_error("Key named '" + _key + "' not found.");
-    }
+    assert(i != size());
     return data_[i].second;
   }
 

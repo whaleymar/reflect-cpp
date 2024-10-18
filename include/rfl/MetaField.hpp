@@ -11,7 +11,7 @@ class MetaField {
   MetaField(const std::string& _name, const std::string& _type)
       : name_(_name), type_(_type) {}
 
-  ~MetaField() = default;
+  // ~MetaField() = default;
 
   /// The name of the field we describe.
   const std::string& name() const { return name_; };

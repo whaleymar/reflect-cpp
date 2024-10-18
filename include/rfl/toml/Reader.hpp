@@ -96,11 +96,7 @@ struct Reader {
   template <class T>
   rfl::Result<T> use_custom_constructor(
       const InputVarType _var) const noexcept {
-    try {
-      return T::from_toml_obj(_var);
-    } catch (std::exception& e) {
-      return rfl::Error(e.what());
-    }
+    return T::from_toml_obj(_var);
   }
 };
 

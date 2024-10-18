@@ -18,18 +18,14 @@ template <class R, class W, class ProcessorsType, class OriginalClass,
 struct CustomParser {
   static Result<OriginalClass> read(const R& _r, const auto& _var) noexcept {
     const auto to_class = [](auto&& _h) -> Result<OriginalClass> {
-      try {
-        if constexpr (internal::has_to_class_method_v<HelperStruct>) {
-          return _h.to_class();
-        } else {
-          auto ptr_field_tuple = internal::to_ptr_field_tuple(_h);
-          const auto class_from_ptrs = [](auto&... _ptrs) {
-            return OriginalClass(std::move(*_ptrs.value_)...);
-          };
-          return rfl::apply(class_from_ptrs, ptr_field_tuple);
-        }
-      } catch (std::exception& e) {
-        return Error(e.what());
+      if constexpr (internal::has_to_class_method_v<HelperStruct>) {
+        return _h.to_class();
+      } else {
+        auto ptr_field_tuple = internal::to_ptr_field_tuple(_h);
+        const auto class_from_ptrs = [](auto&... _ptrs) {
+          return OriginalClass(std::move(*_ptrs.value_)...);
+        };
+        return rfl::apply(class_from_ptrs, ptr_field_tuple);
       }
     };
     return Parser<R, W, HelperStruct, ProcessorsType>::read(_r, _var).and_then(

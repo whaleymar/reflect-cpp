@@ -36,9 +36,8 @@ struct Reader {
   using InputVarType = CBORInputVar;
 
   template <class T>
-  static constexpr bool has_custom_constructor = (requires(InputVarType var) {
-    T::from_cbor_obj(var);
-  });
+  static constexpr bool has_custom_constructor =
+      (requires(InputVarType var) { T::from_cbor_obj(var); });
 
   rfl::Result<InputVarType> get_field_from_array(
       const size_t _idx, const InputArrayType& _arr) const noexcept;
@@ -114,8 +113,7 @@ struct Reader {
     }
   }
 
-  rfl::Result<InputArrayType> to_array(
-      const InputVarType& _var) const noexcept;
+  rfl::Result<InputArrayType> to_array(const InputVarType& _var) const noexcept;
 
   rfl::Result<InputObjectType> to_object(
       const InputVarType& _var) const noexcept;
@@ -184,19 +182,14 @@ struct Reader {
   template <class T>
   rfl::Result<T> use_custom_constructor(
       const InputVarType& _var) const noexcept {
-    try {
-      return T::from_cbor_obj(_var);
-    } catch (std::exception& e) {
-      return rfl::Error(e.what());
-    }
+    return T::from_cbor_obj(_var);
   }
 
  private:
   CborError get_bytestring(const CborValue* _ptr,
                            rfl::Bytestring* _str) const noexcept;
 
-  CborError get_string(const CborValue* _ptr,
-                       std::string* _str) const noexcept;
+  CborError get_string(const CborValue* _ptr, std::string* _str) const noexcept;
 };
 
 }  // namespace cbor

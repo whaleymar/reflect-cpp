@@ -12,7 +12,7 @@ namespace rfl {
 namespace parsing {
 
 template <class R, class W, class ProcessorsType>
-requires AreReaderAndWriter<R, W, std::filesystem::path>
+  requires AreReaderAndWriter<R, W, std::filesystem::path>
 struct Parser<R, W, std::filesystem::path, ProcessorsType> {
   using InputVarType = typename R::InputVarType;
 
@@ -21,11 +21,7 @@ struct Parser<R, W, std::filesystem::path, ProcessorsType> {
                                             const InputVarType& _var) noexcept {
     const auto to_path =
         [&](std::string&& _str) -> Result<std::filesystem::path> {
-      try {
-        return std::filesystem::path(_str);
-      } catch (std::exception& e) {
-        return Error(e.what());
-      }
+      return std::filesystem::path(_str);
     };
     return Parser<R, W, std::string, ProcessorsType>::read(_r, _var).and_then(
         to_path);

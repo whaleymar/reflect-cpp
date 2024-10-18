@@ -22,11 +22,7 @@ struct Validator {
 
   /// Exception-free validation.
   static Result<Validator<T, V, Vs...>> from_value(const T& _value) noexcept {
-    try {
-      return Validator<T, V, Vs...>(_value);
-    } catch (std::exception& e) {
-      return Error(e.what());
-    }
+    return Validator<T, V, Vs...>(_value);
   }
 
   Validator() : value_(ValidationType::validate(T()).value()) {}

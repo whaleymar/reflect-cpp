@@ -27,11 +27,12 @@ class Timestamp {
 
   Timestamp(const char* _str) : tm_(std::tm{}) {
     const auto r = strptime(_str, _format.str().c_str(), &tm_);
-    if (r == NULL) {
-      throw std::runtime_error("String '" + std::string(_str) +
-                               "' did not match format '" + Format().str() +
-                               "'.");
-    }
+    assert(r != NULL);
+    // if (r == NULL) {
+    //   std::runtime_error("String '" + std::string(_str) +
+    //                            "' did not match format '" + Format().str() +
+    //                            "'.");
+    // }
   }
 
   Timestamp(const std::string& _str) : Timestamp(_str.c_str()) {}
@@ -43,11 +44,7 @@ class Timestamp {
   /// Returns a result containing the timestamp when successful or an Error
   /// otherwise.
   static Result<Timestamp> from_string(const char* _str) noexcept {
-    try {
-      return Timestamp(_str);
-    } catch (std::exception& e) {
-      return Error(e.what());
-    }
+    return Timestamp(_str);
   }
 
   /// Returns a result containing the timestamp when successful or an Error
