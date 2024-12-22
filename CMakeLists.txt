@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 
-option(REFLECTCPP_BUILD_SHARED "Build shared library" ${BUILD_SHARED_LIBS})
+option(REFLECTCPP_BUILD_SHARED "Build shared library" OFF)
 
 option(REFLECTCPP_JSON "Enable JSON support" ON) # enabled by default
 option(REFLECTCPP_BSON "Enable BSON support" OFF)
@@ -53,7 +53,7 @@ endif()
 if (MSVC)
     target_compile_options(reflectcpp PRIVATE $<$<CONFIG:Debug>:-Wall>)
 else()
-    target_compile_options(reflectcpp PRIVATE $<$<CONFIG:Debug>:-Wall -Wextra>)
+    target_compile_options(reflectcpp PRIVATE $<$<CONFIG:Debug>:>)
 endif()
 
 target_compile_features(reflectcpp PUBLIC cxx_std_20)
