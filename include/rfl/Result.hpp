@@ -295,14 +295,8 @@ class Result {
     }
   }
   bool has_value() const noexcept { return success_; }
-  const Error& error() const& {
-    if (success_) throw std::runtime_error("Expected does not contain value");
-    return get_err();
-  }
-  Error& error() & {
-    if (success_) throw std::runtime_error("Expected does not contain value");
-    return get_err();
-  }
+  const Error& error() const& { return get_err(); }
+  Error& error() & { return get_err(); }
   T* operator->() noexcept { return &get_t(); }
   const T* operator->() const noexcept { return &get_t(); }
   template <class F>
