@@ -27,7 +27,7 @@ namespace parsing {
 /// but also includes map-like types, when the key is not of type
 /// std::string.
 template <class R, class W, class VecType, class ProcessorsType>
-requires AreReaderAndWriter<R, W, VecType>
+  requires AreReaderAndWriter<R, W, VecType>
 struct VectorParser {
  public:
   using InputArrayType = typename R::InputArrayType;
@@ -57,7 +57,7 @@ struct VectorParser {
             VectorReader<R, W, VecType, ProcessorsType>(&_r, &vec);
         const auto err = _r.read_array(vector_reader, _arr);
         if (err) {
-          return *err;
+          return error(*err);
         }
         return vec;
       };
@@ -85,10 +85,14 @@ struct VectorParser {
   /// Generates a schema for the underlying type.
   static schema::Type to_schema(
       std::map<std::string, schema::Type>* _definitions) {
-    using Type = schema::Type;
-    return Type{Type::TypedArray{
-        .type_ = Ref<Type>::make(
-            Parser<R, W, T, ProcessorsType>::to_schema(_definitions))}};
+    if constexpr (treat_as_map()) {
+      return MapParser<R, W, VecType, ProcessorsType>::to_schema(_definitions);
+    } else {
+      using Type = schema::Type;
+      return Type{Type::TypedArray{
+          .type_ = Ref<Type>::make(
+              Parser<R, W, T, ProcessorsType>::to_schema(_definitions))}};
+    }
   }
 
  private:

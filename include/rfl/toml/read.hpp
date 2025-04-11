@@ -25,11 +25,18 @@ auto read(InputVarType _var) {
   return Parser<T, ProcessorsType>::read(r, _var);
 }
 
-/// Parses an object from TOML using reflection.
+/// Reads a TOML string.
 template <class T, class... Ps>
 Result<internal::wrap_in_rfl_array_t<T>> read(const std::string& _toml_str) {
   auto table = ::toml::parse(_toml_str);
   return read<T, Ps...>(&table);
+}
+
+/// Reads a TOML string.
+template <class T, class... Ps>
+Result<internal::wrap_in_rfl_array_t<T>> read(
+    const std::string_view _toml_str) {
+  return read<T, Ps...>(std::string(_toml_str));
 }
 
 /// Parses an object from a stringstream.

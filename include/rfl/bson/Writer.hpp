@@ -19,6 +19,7 @@
 #include "../Ref.hpp"
 #include "../Result.hpp"
 #include "../always_false.hpp"
+#include "../internal/ptr_cast.hpp"
 
 namespace rfl {
 namespace bson {
@@ -82,12 +83,12 @@ class Writer {
   OutputArrayType add_array_to_array(const size_t _size,
                                      OutputArrayType* _parent) const noexcept;
 
-  OutputArrayType add_array_to_object(
-      const std::string_view& _name, const size_t _size,
-      OutputObjectType* _parent) const noexcept;
+  OutputArrayType add_array_to_object(const std::string_view& _name,
+                                      const size_t _size,
+                                      OutputObjectType* _parent) const noexcept;
 
-  OutputObjectType add_object_to_array(
-      const size_t _size, OutputArrayType* _parent) const noexcept;
+  OutputObjectType add_object_to_array(const size_t _size,
+                                       OutputArrayType* _parent) const noexcept;
 
   OutputObjectType add_object_to_object(
       const std::string_view& _name, const size_t _size,
@@ -103,7 +104,7 @@ class Writer {
                                       rfl::Bytestring>()) {
       bson_array_builder_append_binary(
           _parent->val_, BSON_SUBTYPE_BINARY,
-          reinterpret_cast<const uint8_t*>(_var.c_str()),
+          internal::ptr_cast<const uint8_t*>(_var.data()),
           static_cast<uint32_t>(_var.size()));
     } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>()) {
       bson_array_builder_append_bool(_parent->val_, _var);
@@ -133,7 +134,7 @@ class Writer {
                                       rfl::Bytestring>()) {
       bson_append_binary(_parent->val_, _name.data(),
                          static_cast<int>(_name.size()), BSON_SUBTYPE_BINARY,
-                         reinterpret_cast<const uint8_t*>(_var.c_str()),
+                         internal::ptr_cast<const uint8_t*>(_var.data()),
                          static_cast<uint32_t>(_var.size()));
     } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>()) {
       bson_append_bool(_parent->val_, _name.data(),

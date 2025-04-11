@@ -4,7 +4,6 @@
 #include <compare>
 #include <cstdint>
 #include <functional>
-#include <limits>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -28,10 +27,8 @@ class Literal {
   using FieldsType = rfl::Tuple<LiteralHelper<fields_>...>;
 
  public:
-  using ValueType =
-      std::conditional_t<sizeof...(fields_) <=
-                             std::numeric_limits<std::uint8_t>::max(),
-                         std::uint8_t, std::uint16_t>;
+  using ValueType = std::conditional_t<sizeof...(fields_) <= 255, std::uint8_t,
+                                       std::uint16_t>;
 
   /// The number of different fields or different options that the literal
   /// can assume.
@@ -78,7 +75,7 @@ class Literal {
   /// Constructs a new Literal.
   static Result<Literal<fields_...>> from_value(ValueType _value) {
     if (_value >= num_fields_) {
-      return Error("Value cannot exceed number of fields.");
+      return error("Value cannot exceed number of fields.");
     }
     return Literal<fields_...>(_value);
   }
@@ -164,7 +161,7 @@ class Literal {
 
   /// Assigns the literal from a string
   Literal<fields_...>& operator=(const std::string& _str) {
-    value_ = find_value(_str);
+    value_ = find_value(_str).value();
     return *this;
   }
 
@@ -309,7 +306,7 @@ class Literal {
     const auto idx = find_value_set_idx(
         _str, &found, std::make_integer_sequence<int, num_fields_>());
     if (!found) {
-      return Error(
+      return error(
           "Literal does not support string '" + _str +
           "'. The following strings are supported: " + allowed_strings() + ".");
     }

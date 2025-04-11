@@ -22,6 +22,7 @@
 #include "../Bytestring.hpp"
 #include "../Result.hpp"
 #include "../always_false.hpp"
+#include "../internal/ptr_cast.hpp"
 
 namespace rfl {
 namespace bson {
@@ -49,12 +50,49 @@ struct Reader {
       (requires(InputVarType var) { T::from_bson_obj(var); });
 
   rfl::Result<InputVarType> get_field_from_array(
-      const size_t _idx, const InputArrayType& _arr) const noexcept;
+      const size_t _idx, const InputArrayType& _arr) const noexcept {
+    bson_t b;
+    bson_iter_t iter;
+    const auto doc = _arr.val_->value.v_doc;
+    if (bson_init_static(&b, doc.data, doc.data_len)) {
+      if (bson_iter_init(&iter, &b)) {
+        size_t i = 0;
+        while (bson_iter_next(&iter)) {
+          if (i == _idx) {
+            return to_input_var(&iter);
+          }
+          ++i;
+        }
+      } else {
+        return error("Could not init the array iteration.");
+      }
+    } else {
+      return error("Could not init array.");
+    }
+    return error("Index " + std::to_string(_idx) + " of of bounds.");
+  }
 
   rfl::Result<InputVarType> get_field_from_object(
-      const std::string& _name, const InputObjectType& _obj) const noexcept;
+      const std::string& _name, const InputObjectType& _obj) const noexcept {
+    bson_t b;
+    bson_iter_t iter;
+    const auto doc = _obj.val_->value.v_doc;
+    if (bson_init_static(&b, doc.data, doc.data_len)) {
+      if (bson_iter_init(&iter, &b)) {
+        while (bson_iter_next(&iter)) {
+          auto key = std::string(bson_iter_key(&iter));
+          if (key == _name) {
+            return to_input_var(&iter);
+          }
+        }
+      }
+    }
+    return error("No field named '" + _name + "' was found.");
+  }
 
-  bool is_empty(const InputVarType& _var) const noexcept;
+  bool is_empty(const InputVarType& _var) const noexcept {
+    return _var.val_->value_type == BSON_TYPE_NULL;
+  }
 
   template <class T>
   rfl::Result<T> to_basic_type(const InputVarType& _var) const noexcept {
@@ -69,33 +107,40 @@ struct Reader {
           return std::string(value.v_symbol.symbol, value.v_symbol.len);
 
         default:
-          return rfl::Error(
+          return error(
               "Could not cast to string. The type must be UTF8 or symbol.");
       }
+
     } else if constexpr (std::is_same<std::remove_cvref_t<T>,
                                       rfl::Bytestring>()) {
       if (btype != BSON_TYPE_BINARY) {
-        return rfl::Error("Could not cast to bytestring.");
+        return error("Could not cast to bytestring.");
       }
       if (value.v_binary.subtype != BSON_SUBTYPE_BINARY) {
-        return rfl::Error(
+        return error(
             "The BSON subtype must be a binary in order to read into a "
             "bytestring.");
       }
-      return rfl::Bytestring(
-          reinterpret_cast<const std::byte*>(value.v_binary.data),
-          value.v_binary.data_len);
+      const auto data =
+          internal::ptr_cast<const std::byte*>(value.v_binary.data);
+      return rfl::Bytestring(data, data + value.v_binary.data_len);
+
     } else if constexpr (std::is_same<std::remove_cvref_t<T>, bool>()) {
       if (btype != BSON_TYPE_BOOL) {
-        return rfl::Error("Could not cast to boolean.");
+        return error("Could not cast to boolean.");
       }
       return value.v_bool;
-    } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>() ||
-                         std::is_integral<std::remove_cvref_t<T>>()) {
-      switch (btype) {
-        case BSON_TYPE_DOUBLE:
-          return static_cast<T>(value.v_double);
 
+    } else if constexpr (std::is_floating_point<std::remove_cvref_t<T>>()) {
+      if (btype != BSON_TYPE_DOUBLE) {
+        return error(
+            "Could not cast to numeric value. The type must be double, "
+            "int32, int64 or date_time.");
+      }
+      return static_cast<T>(value.v_double);
+
+    } else if constexpr (std::is_integral<std::remove_cvref_t<T>>()) {
+      switch (btype) {
         case BSON_TYPE_INT32:
           return static_cast<T>(value.v_int32);
 
@@ -106,13 +151,14 @@ struct Reader {
           return static_cast<T>(value.v_datetime);
 
         default:
-          return rfl::Error(
-              "Could not cast to numeric value. The type must be double, "
+          return error(
+              "Could not cast to numeric value. The type must be "
               "int32, int64 or date_time.");
       }
+
     } else if constexpr (std::is_same<std::remove_cvref_t<T>, bson_oid_t>()) {
       if (btype != BSON_TYPE_OID) {
-        return rfl::Error("Could not cast to OID.");
+        return error("Could not cast to OID.");
       }
       return value.v_oid;
     } else {
@@ -120,7 +166,14 @@ struct Reader {
     }
   }
 
-  rfl::Result<InputArrayType> to_array(const InputVarType& _var) const noexcept;
+  rfl::Result<InputArrayType> to_array(
+      const InputVarType& _var) const noexcept {
+    const auto btype = _var.val_->value_type;
+    if (btype != BSON_TYPE_ARRAY && btype != BSON_TYPE_DOCUMENT) {
+      return error("Could not cast to an array.");
+    }
+    return InputArrayType{_var.val_};
+  }
 
   template <class ArrayReader>
   std::optional<Error> read_array(const ArrayReader& _array_reader,
@@ -167,7 +220,13 @@ struct Reader {
   }
 
   rfl::Result<InputObjectType> to_object(
-      const InputVarType& _var) const noexcept;
+      const InputVarType& _var) const noexcept {
+    const auto btype = _var.val_->value_type;
+    if (btype != BSON_TYPE_DOCUMENT) {
+      return error("Could not cast to a document.");
+    }
+    return InputObjectType{_var.val_};
+  }
 
   template <class T>
   rfl::Result<T> use_custom_constructor(
@@ -177,7 +236,9 @@ struct Reader {
 }
 
 private : InputVarType
-          to_input_var(bson_iter_t* _iter) const noexcept;
+          to_input_var(bson_iter_t* _iter) const noexcept {
+  return InputVarType{bson_iter_value(_iter)};
+}
 };
 
 }  // namespace bson

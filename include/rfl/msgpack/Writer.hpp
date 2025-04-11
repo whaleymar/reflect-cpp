@@ -17,6 +17,7 @@
 #include "../Ref.hpp"
 #include "../Result.hpp"
 #include "../always_false.hpp"
+#include "../Bytestring.hpp"
 
 namespace rfl::msgpack {
 
@@ -43,7 +44,9 @@ class Writer {
   OutputVarType null_as_root() const noexcept;
 
   template <class T>
-  OutputVarType value_as_root(const T& _var) const noexcept;
+  OutputVarType value_as_root(const T& _var) const noexcept {
+    return new_value(_var);
+  }
 
   OutputArrayType add_array_to_array(const size_t _size,
                                      OutputArrayType* _parent) const noexcept;
@@ -96,7 +99,7 @@ class Writer {
       msgpack_pack_str_body(pk_, _var.c_str(), _var.size());
     } else if constexpr (std::is_same<Type, rfl::Bytestring>()) {
       msgpack_pack_bin(pk_, _var.size());
-      msgpack_pack_bin_body(pk_, _var.c_str(), _var.size());
+      msgpack_pack_bin_body(pk_, _var.data(), _var.size());
     } else if constexpr (std::is_same<Type, bool>()) {
       if (_var) {
         msgpack_pack_true(pk_);
